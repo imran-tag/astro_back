@@ -1,0 +1,13 @@
+﻿gunicorn
+whitenoise
+asgiref
+certifi
+charset-normalizer
+Django
+djangorestframework
+idna
+python-dotenv
+requests
+sqlparse
+tzdata
+urllib3
