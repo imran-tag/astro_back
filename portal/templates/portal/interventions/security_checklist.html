@@ -1,0 +1,188 @@
+<!-- portal/templates/portal/interventions/security_checklist.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Contrôle de sécurité</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .header {
+            background-color: #f3f4f6;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .back-button {
+            color: #14224A;
+            padding: 0.5rem;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: start;
+            gap: 1rem;
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .custom-checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #14224A;
+            border-radius: 4px;
+            flex-shrink: 0;
+            margin-top: 0.25rem;
+        }
+
+        .custom-checkbox.checked {
+            background-color: #14224A;
+            position: relative;
+        }
+
+        .custom-checkbox.checked::after {
+            content: '✓';
+            color: white;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .next-button {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            padding: 0.75rem 1.5rem;
+            background-color: #14224A;
+            color: white;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .progress-dots {
+            position: fixed;
+            bottom: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #e5e7eb;
+        }
+
+        .dot.active {
+            background-color: #14224A;
+        }
+    </style>
+</head>
+<body class="bg-white">
+    <!-- Header -->
+    <div class="header">
+        <a href="{% url 'intervention_detail' intervention.uid %}" class="back-button">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+        </a>
+        <h1 class="text-xl font-bold text-gray-900">Contrôle de sécurité</h1>
+    </div>
+
+    <!-- Checklist -->
+    <div class="mt-4">
+        <div class="checkbox-item" onclick="toggleCheckbox(0)">
+            <div id="checkbox-0" class="custom-checkbox"></div>
+            <span class="text-gray-900 text-lg">Lire les pièces jointes et informer son équipe</span>
+        </div>
+
+        <div class="checkbox-item" onclick="toggleCheckbox(1)">
+            <div id="checkbox-1" class="custom-checkbox"></div>
+            <span class="text-gray-900 text-lg">Mettre les EPI</span>
+        </div>
+
+        <div class="checkbox-item" onclick="toggleCheckbox(2)">
+            <div id="checkbox-2" class="custom-checkbox"></div>
+            <span class="text-gray-900 text-lg">Poser le matériel sur une protection</span>
+        </div>
+    </div>
+
+    <!-- Progress dots -->
+    <div class="progress-dots">
+        <div class="dot active"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+    </div>
+
+    <!-- Next button -->
+    <button onclick="nextStep()" class="next-button" disabled style="opacity: 0.5">
+    <span>SUIVANT</span>
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+    </svg>
+</button>
+
+    <script>
+        let checkedBoxes = new Set();
+
+    function toggleCheckbox(index) {
+        const checkbox = document.getElementById(`checkbox-${index}`);
+        if (checkedBoxes.has(index)) {
+            checkedBoxes.delete(index);
+            checkbox.classList.remove('checked');
+        } else {
+            checkedBoxes.add(index);
+            checkbox.classList.add('checked');
+        }
+        updateNextButton();
+    }
+
+    function updateNextButton() {
+        const nextButton = document.querySelector('.next-button');
+        if (checkedBoxes.size === 3) {
+            nextButton.style.opacity = '1';
+            nextButton.disabled = false;
+        } else {
+            nextButton.style.opacity = '0.5';
+            nextButton.disabled = true;
+        }
+    }
+
+    function nextStep() {
+        if (checkedBoxes.size === 3) {
+            // Get the next URL from Django template
+            const nextUrl = "{% url 'photo_upload' intervention.uid %}";
+            // Navigate to the next page
+            window.location.href = nextUrl;
+        }
+    }
+
+    // Initialize next button state
+    updateNextButton();
+
+    // Add some styles to make the button look like a link when enabled
+    document.querySelector('.next-button').style.cssText = `
+        background: none;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #14224A;
+        font-weight: 500;
+        padding: 0;
+        transition: opacity 0.3s ease;
+    `;
+    </script>
+</body>
+</html>

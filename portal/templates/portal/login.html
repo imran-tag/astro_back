@@ -1,0 +1,83 @@
+<!-- portal/templates/portal/login.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Technician Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .login-container {
+            max-width: 400px;
+            width: 90%;
+            margin: 2rem auto;
+            padding: 20px;
+        }
+        .input-field {
+            width: 100%;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-radius: 8px;
+            border: none;
+            background-color: #f3f4f6;
+        }
+        .login-button {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 8px;
+            background-color: #14224A;
+            color: white;
+            font-weight: 500;
+            margin-top: 1rem;
+        }
+        .forgot-password {
+            color: #14224A;
+            text-decoration: underline;
+            text-align: right;
+            display: block;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body class="bg-white">
+    <div class="login-container">
+        <div class="text-center mb-8">
+            <img src="https://astro-tech.fr/astro-ges/uploads/images/astro-logo.png" alt="Astro Tech Logo" class="mx-auto w-32 mb-6">
+            <h1 class="text-2xl text-gray-600 mb-8">Je me connecte à Astro Tech</h1>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <input type="email" name="email" required placeholder="Email..."
+                       class="input-field">
+            </div>
+
+            <div class="relative">
+                <input type="password" name="password" required placeholder="Mot de passe..."
+                       class="input-field">
+                <button type="button" class="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#14224A" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </button>
+            </div>
+
+            <a href="#" class="forgot-password">Mot de passe oublié ?</a>
+
+            <button type="submit" class="login-button">
+                Je me connecte
+            </button>
+        </form>
+    </div>
+</body>
+</html>

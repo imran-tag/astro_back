@@ -1,0 +1,355 @@
+<!-- portal/templates/portal/interventions/detail.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Détail Intervention</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    function showConfirmationDialog() {
+        document.getElementById('confirmationDialog').classList.remove('hidden');
+        document.getElementById('confirmationDialog').classList.add('flex');
+    }
+
+    function hideConfirmationDialog() {
+        document.getElementById('confirmationDialog').classList.add('hidden');
+        document.getElementById('confirmationDialog').classList.remove('flex');
+    }
+
+    function updateInterventionStatus() {
+        // Show loading state
+        const confirmButton = document.querySelector('#confirmationDialog button:last-child');
+        const originalText = confirmButton.textContent;
+        confirmButton.textContent = 'Chargement...';
+        confirmButton.disabled = true;
+
+        // Make API call to update status
+        fetch('/interventions/{{ intervention.uid }}/update_status/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                status: 'en_cours'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Reload page to show updated status
+                window.location.reload();
+            } else {
+                alert('Erreur lors de la mise à jour du statut');
+                hideConfirmationDialog();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Erreur lors de la mise à jour du statut');
+            hideConfirmationDialog();
+        })
+        .finally(() => {
+            confirmButton.textContent = originalText;
+            confirmButton.disabled = false;
+        });
+    }
+</script>
+    <style>
+        body {
+            -webkit-tap-highlight-color: transparent;
+            background-color: #f3f4f6;
+        }
+
+        .header {
+            background-color: #f3f4f6;
+            padding: 1rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .main-content {
+            padding-top: 60px;
+            padding-bottom: 70px;
+        }
+
+        .detail-item {
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: white;
+        }
+
+        .detail-label {
+            color: #1f2937;
+            font-weight: 500;
+        }
+
+        .detail-value {
+            color: #6b7280;
+            text-align: right;
+        }
+
+        .profile-circle {
+            width: 80px;
+            height: 80px;
+            background-color: #14224A;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 1rem auto;
+        }
+
+        .action-buttons {
+            position: fixed;
+            right: 1rem;
+            top: 5rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-button {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .attachment-button {
+            background-color: #14224A;
+            color: white;
+        }
+
+        .calendar-button {
+            background-color: #0096FF;
+            color: white;
+        }
+
+        .back-button {
+            padding: 0.5rem;
+            color: #14224A;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header flex items-center">
+        <a href="{% url 'interventions' %}" class="back-button">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+        </a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Profile Circle -->
+        {% if intervention.status_uid == '5' %}
+    <!-- Orange circle for in-progress interventions -->
+    <div class="profile-circle" style="background-color: #FF6B00;">
+        {{ intervention.business_title|slice:":2"|upper }}
+    </div>
+{% else %}
+    <!-- Blue circle for other interventions (planned) -->
+    <div class="profile-circle" style="background-color: #14224A;">
+        {{ intervention.business_title|slice:":2"|upper }}
+    </div>
+{% endif %}
+
+        <!-- Title -->
+        <h1 class="text-center text-xl font-bold text-gray-800 mb-4">
+            {{ intervention.business_title }}
+        </h1>
+        <p class="text-center text-gray-600 mb-6">
+            {{ intervention.status }}
+        </p>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+    <button class="action-button attachment-button">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+        </svg>
+    </button>
+{% if intervention.status_uid == '5' %}
+    <a href="{% url 'security_checklist' intervention.uid %}"
+       class="action-button progress-button"
+       style="background-color: #FF6B00;">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+    </a>
+    {% else %}
+        <button onclick="showConfirmationDialog()"
+                class="action-button calendar-button"
+                style="background-color: #0096FF;">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+        </button>
+    {% endif %}
+</div>
+
+
+<style>
+    .fixed {
+        position: fixed;
+    }
+
+    .inset-0 {
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+    }
+
+    .bg-opacity-50 {
+        --tw-bg-opacity: 0.5;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    .flex {
+        display: flex;
+    }
+    .action-buttons {
+        position: fixed;
+        right: 1rem;
+        top: 5rem;
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .action-button {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        color: white;
+    }
+
+    .attachment-button {
+        background-color: #14224A;
+    }
+
+    .calendar-button {
+        background-color: #0096FF;
+    }
+
+    .progress-button {
+        background-color: #FF6B00;
+    }
+
+    /* Add touch feedback */
+    .action-button:active {
+        opacity: 0.8;
+        transform: scale(0.95);
+    }
+</style>
+
+        <!-- Details List -->
+        <div class="mt-4">
+            <div class="detail-item">
+                <span class="detail-label">Titre</span>
+                <span class="detail-value">{{ intervention.uid }}</span>
+            </div>
+
+            <div class="detail-item">
+                <span class="detail-label">Adresse locataire</span>
+<a href="https://www.google.fr/maps/search/{% if intervention.address %}{{ intervention.address|urlencode }}{% endif %}{% if intervention.city %},+{{ intervention.city|urlencode }}{% endif %}"
+       class="detail-value text-blue-500"
+       target="_blank"
+       rel="noopener noreferrer">
+        {{ intervention.address }}{% if intervention.city %}, {{ intervention.city }}{% endif %}
+    </a>            </div>
+
+            <div class="detail-item">
+                <span class="detail-label">Ville locataire</span>
+                <span class="detail-value">{{ intervention.city }}</span>
+            </div>
+
+            <div class="detail-item">
+                <span class="detail-label">Date</span>
+                <span class="detail-value">{{ intervention.date_time }}</span>
+            </div>
+
+            <div class="detail-item">
+                <span class="detail-label">Priorité</span>
+                <span class="detail-value">{{ intervention.priority }}</span>
+            </div>
+
+            <div class="detail-item">
+                <span class="detail-label">Type</span>
+                <span class="detail-value">{{ intervention.intervention_type }}</span>
+            </div>
+
+            <div class="detail-item">
+                <span class="detail-label">Immeuble</span>
+                <span class="detail-value">{{ intervention.building }}</span>
+            </div>
+
+            <div class="detail-item">
+                <span class="detail-label">Étage</span>
+                <span class="detail-value">{{ intervention.floor }}</span>
+            </div>
+
+            <div class="detail-item">
+                <span class="detail-label">Appartement</span>
+                <span class="detail-value">{{ intervention.appartment }}</span>
+            </div>
+
+            <div class="detail-item">
+                <span class="detail-label">De</span>
+                <span class="detail-value">{{ intervention.time_from }}</span>
+            </div>
+
+            <div class="detail-item">
+                <span class="detail-label">A</span>
+                <span class="detail-value">{{ intervention.time_to }}</span>
+            </div>
+
+            <div class="detail-item">
+                <span class="detail-label">Description</span>
+                <span class="detail-value">{{ intervention.description }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="confirmationDialog" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 m-4 max-w-sm w-full">
+        <h3 class="text-lg font-bold mb-4">Confirmation</h3>
+        <p class="mb-6">Voulez-vous démarrer cette intervention ?</p>
+        <div class="flex justify-end gap-4">
+            <button onclick="hideConfirmationDialog()"
+                    class="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-100">
+                Annuler
+            </button>
+            <button onclick="updateInterventionStatus()"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                Confirmer
+            </button>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
